@@ -57,3 +57,4 @@ git remote addなどで、originという文字列と、URLを紐づける
 大元のissueを見ながら自分のローカルで機能開発を進め、自分のGitHubにPullRequestを提出する
 （この案件は、developブランチとfeatureブランチのみで行う形で、masterブランチはなくても構わない）
 ```
+
