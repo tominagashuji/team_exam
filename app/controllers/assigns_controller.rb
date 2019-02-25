@@ -1,5 +1,7 @@
 class AssignsController < ApplicationController
+  include AssignsHelper
   before_action :authenticate_user!
+  before_action :require_authority, only: :destroy
 
   def create
     team = Team.friendly.find(params[:team_id])
@@ -35,13 +37,19 @@ class AssignsController < ApplicationController
       'メンバーを削除しました。'
     else
       'なんらかの原因で、削除できませんでした。'
-    end    
-  end  
-  
+    end
+  end
+
   def email_reliable?(address)
     address.match(/\A[\w+\-.]+@[a-z\d\-.]+\.[a-z]+\z/i)
   end
-  
+
+  def require_authority
+    assign = Assign.find(params[:id])
+    assigned_user = assign.user
+    redirect_to team_path(assign.team_id), notice: '権限がありません' unless owner_or_yourself(assign)
+  end
+
   def set_next_team(assign, assigned_user)
     another_team = Assign.find_by(user_id: assigned_user.id).team
     change_keep_team(assigned_user, another_team) if assigned_user.keep_team_id == assign.team_id
