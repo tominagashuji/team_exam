@@ -1,5 +1,8 @@
 class AgendasController < ApplicationController
   # before_action :set_agenda, only: %i[show edit update destroy]
+  include AgendasHelper
+  before_action :set_agenda, only: :destroy
+  before_action :require_owner_or_author, only: :destroy
 
   def index
     @agendas = Agenda.all
@@ -22,9 +25,9 @@ class AgendasController < ApplicationController
   end
 
   def destroy
-    agenda = Agenda.find(params[:id])
-    agenda.destroy
-    redirect_to agenda.team, notice: "削除しました"
+    @agenda.destroy
+    AgendaMailer.agenda_info_mail(@agenda).deliver
+    redirect_to dashboard_url, notice: "削除しました"
   end
 
   private
@@ -35,5 +38,10 @@ class AgendasController < ApplicationController
 
   def agenda_params
     params.fetch(:agenda, {}).permit %i[title description]
+  end
+
+  def require_owner_or_author
+    set_agenda
+    redirect_to @agenda.team, notice: "権限がありません" unless owner_or_author?(@agenda)
   end
 end
